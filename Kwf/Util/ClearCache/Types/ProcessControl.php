@@ -17,7 +17,7 @@ class Kwf_Util_ClearCache_Types_ProcessControl extends Kwf_Util_ClearCache_Types
 
     protected function _refreshCache($options)
     {
-        $cmd = Kwf_Config::getValue('server.phpCli').' bootstrap.php process-control restart --silent 2>&1';
+        $cmd = Kwf_Config::getValue('server.phpCli').' bootstrap.php process-control restart 2>&1';
         exec($cmd, $out, $ret);
         if ($ret) {
             throw new Kwf_Exception("restart failed:\n".implode("\n", $out));

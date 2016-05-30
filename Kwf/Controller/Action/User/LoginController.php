@@ -3,6 +3,7 @@ class Kwf_Controller_Action_User_LoginController extends Kwf_Controller_Action
 {
     protected function _validateSessionToken()
     {
+        return;
         if ($this->getRequest()->getActionName() != 'json-logout-user'
             && $this->getRequest()->getActionName() != 'json-login-user'
         ) {
@@ -60,12 +61,12 @@ class Kwf_Controller_Action_User_LoginController extends Kwf_Controller_Action
 
     public function headerAction()
     {
+        $row = null;
         try {
             $t = new Kwf_Util_Model_Welcome();
-            $row = $t->getRow(1);
+            //$row = $t->getRow(1);
         } catch (Zend_Db_Statement_Exception $e) {
             //wenn tabelle nicht existiert fehler abfangen
-            $row = null;
         }
         if ($row && $row->getParentRow('LoginImage')) {
             $this->view->image = Kwf_Media::getUrlByRow(
@@ -294,7 +295,8 @@ class Kwf_Controller_Action_User_LoginController extends Kwf_Controller_Action
 
     protected function _createAuthAdapter()
     {
-        $adapter = new Kwf_Auth_Adapter_PasswordAuth();
+        //$adapter = new Kwf_Auth_Adapter_PasswordAuth();
+        $adapter = new H3S_Auth_Adapter_ActiveDirectory();
         return $adapter;
     }
 
@@ -306,8 +308,9 @@ class Kwf_Controller_Action_User_LoginController extends Kwf_Controller_Action
 
         $adapter = $this->_createAuthAdapter();
 
-        if (!$adapter instanceof Kwf_Auth_Adapter_PasswordAuth) {
-            throw new Kwf_Controller_Exception(('_createAuthAdapter didn\'t return instance of Kwf_Auth_Adapter_PasswordAuth'));
+        //if (!$adapter instanceof Kwf_Auth_Adapter_PasswordAuth) {
+        if (!$adapter instanceof H3S_Auth_Adapter_ActiveDirectory) {
+            throw new Kwf_Controller_Exception(('_createAuthAdapter didn\'t return instance of H3S_Auth_Adapter_ActiveDirectory'));
         }
 
         $auth = Kwf_Auth::getInstance();

@@ -31,6 +31,8 @@ class Kwf_Cache_Simple
             $ret = 'elastiCache';
         } else if (Kwf_Config::getValue('server.memcache.host')) {
             $ret = 'memcache';
+        } else if (Kwf_Config::getValue('server.redis.sock') || Kwf_Config::getValue('server.redis.host')) {
+            $ret = 'redis';
         } else if (extension_loaded('apc') && !Kwf_Config::getValue('server.apcStaticOnly')) {
             $ret = 'apc';
         } else {
@@ -54,6 +56,24 @@ class Kwf_Cache_Simple
                 self::$_zendCache->setBackend(new Kwf_Util_Aws_ElastiCache_CacheBackend(array(
                     'cacheClusterId' => Kwf_Config::getValue('aws.simpleCacheCluster'),
                 )));
+            } else if ($be == 'redis') {
+                    self::$_zendCache = new Zend_Cache_Core(array(
+                        'lifetime' => null,
+                        'write_control' => false,
+                        'automatic_cleaning_factor' => 0,
+                        'automatic_serialization' => true
+                    ));
+                    $config = array();
+                    if (Kwf_Config::getValue('server.redis.sock')) {
+                        $config['socket'] = Kwf_Config::getValue('server.redis.sock');
+                    } else {
+                        if (Kwf_Config::getValue('server.redis.host'));
+                            $config['host'] = Kwf_Config::getValue('server.redis.host');
+                        if (Kwf_Config::getValue('server.redis.port'));
+                            $config['port'] = Kwf_Config::getValue('server.redis.port');
+                    }
+
+                    self::$_zendCache->setBackend(new Kwf_Cache_Backend_Redis($config));
             } else if ($be == 'apc') {
                 self::$_zendCache = false;
             } else {

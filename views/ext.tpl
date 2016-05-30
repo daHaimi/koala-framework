@@ -26,6 +26,18 @@
     #loading-msg {
         font: normal 10px arial,tahoma,sans-serif;
     }
+    .diff td{
+        vertical-align : top;
+        white-space    : pre;
+        white-space    : pre-wrap;
+        font-family    : monospace;
+    }
+    .diff td.diffDeleted {
+        background-color: #EE5757;
+    }
+    .diff td.diffInserted {
+        background-color: #4C9021;
+    }
     </style>
 
     <script type="text/javascript">

@@ -23,7 +23,7 @@ class Kwf_Model_Select_Expr_Date_Format implements Kwf_Model_Select_Expr_Interfa
     public function validate()
     {
         if (!$this->_field) {
-            throw new Kwf_Exception("No Field set for '"+get_class($this)+"'");
+            throw new Kwf_Exception("No Field set for '".get_class($this)."'");
         }
     }
 

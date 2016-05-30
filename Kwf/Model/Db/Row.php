@@ -5,6 +5,9 @@
  */
 class Kwf_Model_Db_Row extends Kwf_Model_Row_Abstract
 {
+    /**
+     * @var Kwf_Model_Row_Abstract
+     */
     protected $_row;
 
     public function __construct(array $config)

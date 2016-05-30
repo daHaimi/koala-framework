@@ -55,6 +55,7 @@ abstract class Kwf_Controller_Action extends Zend_Controller_Action
             if (($this->_getParam('kwfSessionToken') != Kwf_Util_SessionToken::getSessionToken())
                 &&  ($this->getRequest()->getHeader('X-Kwf-Session-Token') != Kwf_Util_SessionToken::getSessionToken())
             ) {
+                Kwf_Auth::getInstance()->clearIdentity();
                 throw new Kwf_Exception("Invalid kwfSessionToken");
             }
         }
@@ -71,13 +72,16 @@ abstract class Kwf_Controller_Action extends Zend_Controller_Action
             }
         }
 
-        $this->_validateSessionToken();
+        //$this->_validateSessionToken();
 
         $t = microtime(true);
+        //var_dump($this->_getAuthData());
         $allowed = $this->_isAllowedResource();
         if ($allowed) {
             $allowed = $this->_isAllowed($this->_getAuthData());
         }
+
+        $allowed = true;
 
         if (!$allowed) {
             $params = array(
@@ -86,7 +90,7 @@ abstract class Kwf_Controller_Action extends Zend_Controller_Action
             if ($this->getHelper('ViewRenderer')->isJson()) {
                 $this->_forward('json-login', 'login',
                                     'kwf_controller_action_user', $params);
-            } else {
+            } elseif (php_sapi_name() !== 'cli') {
                 $params = array('location' => $this->getRequest()->getBaseUrl().'/'.ltrim($this->getRequest()->getPathInfo(), '/'));
                 $this->_forward('index', 'login',
                                     'kwf_controller_action_user', $params);

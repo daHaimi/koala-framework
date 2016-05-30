@@ -8,9 +8,9 @@ class Kwf_Model_Db extends Kwf_Model_Abstract
     protected $_rowsetClass = 'Kwf_Model_Db_Rowset';
     protected $_table;
     protected $_db;
-    private $_tableName;
+    protected $_tableName;
     private $_columns;
-    private $_primaryKey;
+    protected $_primaryKey;
 
     protected $_supportedImportExportFormats = array(self::FORMAT_SQL, self::FORMAT_CSV, self::FORMAT_ARRAY);
 
@@ -68,9 +68,10 @@ class Kwf_Model_Db extends Kwf_Model_Abstract
         return parent::getColumnType($col);
     }
 
-    private function _getTypeFromDbType($type)
+    protected function _getTypeFromDbType($type)
     {
-        if ($type == 'varchar') $type = self::TYPE_STRING;
+        if (stripos($type, 'varchar') !== false) $type = self::TYPE_STRING;
+        else if ($type == 'char') $type = self::TYPE_STRING;
         else if (substr($type, 0, 7) == 'tinyint') $type = self::TYPE_BOOLEAN;
         else if ($type == 'text') $type = self::TYPE_STRING;
         else if ($type == 'tinytext') $type = self::TYPE_STRING;
@@ -176,10 +177,15 @@ class Kwf_Model_Db extends Kwf_Model_Abstract
 
     protected function _fieldWithTableName($field, $tableNameAlias = null)
     {
+        $db = $this->getAdapter();
+        $tableName = $db->quoteIdentifier($this->getTableName());
+        $field = $db->quoteIdentifier($field);
+
         if ($tableNameAlias) {
-            return $tableNameAlias.'.'.$field;
+            $tableNameAlias = $db->quoteIdentifier($tableNameAlias);
+            return $tableNameAlias . '.' . $field;
         } else {
-            return $this->getTableName().'.'.$field;
+            return $tableName . '.' . $field;
         }
     }
 
@@ -1010,7 +1016,8 @@ class Kwf_Model_Db extends Kwf_Model_Abstract
             $this->_tableName = $this->_table;
             $this->_table = new Kwf_Db_Table(array(
                 'name' => $this->_table,
-                'db' => $this->_db
+                'db' => $this->_db,
+                'primary' => $this->_primaryKey
             ));
         }
         return $this->_table;

@@ -11,7 +11,7 @@ class Kwf_Cache extends Zend_Cache
         //parameters $customFrontendNaming, $customBackendNaming, $autoload are not used at the moment
         $frontendClass = 'Zend_Cache_' . ($frontend != 'Core' ? 'Frontend_' : '') . $frontend;
         $backendClass = 'Zend_Cache_Backend_' . $backend;
-        if ($backend == 'Memcached' || $backend == 'File' || $backend == 'TwoLevels' || $backend == 'Apc') {
+        if (in_array($backend, array('Memcached', 'File', 'TwoLevels', 'Apc', 'Redis'))) {
             $backendClass = 'Kwf_Cache_Backend_' . $backend;
         }
         $frontendObject = new $frontendClass($frontendOptions);

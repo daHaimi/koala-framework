@@ -127,6 +127,11 @@ Kwf.Form.ComboBox = Ext2.extend(Ext2.form.ComboBox,
         Kwf.Form.ComboBox.superclass.initComponent.call(this);
     },
 
+    onTriggerClick : function() {
+        //this.clearValue();
+        Kwf.Form.ComboBox.superclass.onTriggerClick.call(this);
+    },
+
     initList : function(){
         if (!this.listWidth) {
             //fixt bug wenn combobox in einem tab ist

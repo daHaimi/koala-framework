@@ -457,8 +457,8 @@ abstract class Kwf_Controller_Action_Auto_Grid extends Kwf_Controller_Action_Aut
             }
 
         }
-        $this->view->metaData['buttons'] = (object)$this->_buttons;
-        $this->view->metaData['permissions'] = (object)$this->_permissions;
+        $this->view->metaData['buttons'] = $this->_buttons;
+        $this->view->metaData['permissions'] = $this->_permissions;
         $this->view->metaData['paging'] = $this->_paging;
         $filters = array();
         foreach ($this->_filters as $filter) {

@@ -394,7 +394,7 @@ class Kwf_Db_Table
             $this->_primary = array();
             foreach ($this->_metadata as $col) {
                 if ($col['PRIMARY']) {
-                    $this->_primary[ $col['PRIMARY_POSITION'] ] = $col['COLUMN_NAME'];
+                    $this->_primary[$col['PRIMARY_POSITION']] = $col['COLUMN_NAME'];
                     if ($col['IDENTITY']) {
                         $this->_identity = $col['PRIMARY_POSITION'];
                     }
@@ -405,33 +405,34 @@ class Kwf_Db_Table
             if (empty($this->_primary)) {
                 throw new Kwf_Exception("A table must have a primary key, but none was found for table '{$this->_name}'");
             }
-        } else if (!is_array($this->_primary)) {
-            $this->_primary = array(1 => $this->_primary);
-        } else if (isset($this->_primary[0])) {
-            array_unshift($this->_primary, null);
-            unset($this->_primary[0]);
-        }
+            if (!is_array($this->_primary)) {
+                $this->_primary = array(1 => $this->_primary);
+            } else if (isset($this->_primary[0])) {
+                array_unshift($this->_primary, null);
+                unset($this->_primary[0]);
+            }
 
-        $cols = $this->getColumns();
-        if (! array_intersect((array) $this->_primary, $cols) == (array) $this->_primary) {
-            throw new Kwf_Exception("Primary key column(s) ("
-                . implode(',', (array) $this->_primary)
-                . ") are not columns in this table ("
-                . implode(',', $cols)
-                . ")");
-        }
+            $cols = $this->getColumns();
+            if (!array_intersect((array)$this->_primary, $cols) == (array)$this->_primary) {
+                throw new Kwf_Exception("Primary key column(s) ("
+                    . implode(',', (array)$this->_primary)
+                    . ") are not columns in this table ("
+                    . implode(',', $cols)
+                    . ")");
+            }
 
-        $primary    = (array) $this->_primary;
-        $pkIdentity = $primary[(int) $this->_identity];
+            $primary = (array)$this->_primary;
+            $pkIdentity = $primary[(int)$this->_identity];
 
-        /**
-         * Special case for PostgreSQL: a SERIAL key implicitly uses a sequence
-         * object whose name is "<table>_<column>_seq".
-         */
-        if ($this->_sequence === true && $this->_db instanceof Zend_Db_Adapter_Pdo_Pgsql) {
-            $this->_sequence = $this->_db->quoteIdentifier("{$this->_name}_{$pkIdentity}_seq");
-            if ($this->_schema) {
-                $this->_sequence = $this->_db->quoteIdentifier($this->_schema) . '.' . $this->_sequence;
+            /**
+             * Special case for PostgreSQL: a SERIAL key implicitly uses a sequence
+             * object whose name is "<table>_<column>_seq".
+             */
+            if ($this->_sequence === true && $this->_db instanceof Zend_Db_Adapter_Pdo_Pgsql) {
+                $this->_sequence = $this->_db->quoteIdentifier("{$this->_name}_{$pkIdentity}_seq");
+                if ($this->_schema) {
+                    $this->_sequence = $this->_db->quoteIdentifier($this->_schema) . '.' . $this->_sequence;
+                }
             }
         }
     }
@@ -507,40 +508,43 @@ class Kwf_Db_Table
     {
         $this->_setupPrimaryKey();
 
-        /**
-         * Kwf_Db_Table assumes that if you have a compound primary key
-         * and one of the columns in the key uses a sequence,
-         * it's the _first_ column in the compound key.
-         */
-        $primary = (array) $this->_primary;
-        $pkIdentity = $primary[(int)$this->_identity];
+        if (! $this->_db instanceof H3S_Db_Adapter_Pdo_Mssql) { // H3S: No good for MSSQL
+            /**
+             * Kwf_Db_Table assumes that if you have a compound primary key
+             * and one of the columns in the key uses a sequence,
+             * it's the _first_ column in the compound key.
+             */
+            $primary = (array)$this->_primary;
+            $pkIdentity = $primary[(int)$this->_identity];
 
 
-        /**
-         * If the primary key can be generated automatically, and no value was
-         * specified in the user-supplied data, then omit it from the tuple.
-         *
-         * Note: this checks for sensible values in the supplied primary key
-         * position of the data.  The following values are considered empty:
-         *   null, false, true, '', array()
-         */
-        if (array_key_exists($pkIdentity, $data)) {
-            if ($data[$pkIdentity] === null                                        // null
-                || $data[$pkIdentity] === ''                                       // empty string
-                || is_bool($data[$pkIdentity])                                     // boolean
-                || (is_array($data[$pkIdentity]) && empty($data[$pkIdentity]))) {  // empty array
-                unset($data[$pkIdentity]);
+            /**
+             * If the primary key can be generated automatically, and no value was
+             * specified in the user-supplied data, then omit it from the tuple.
+             *
+             * Note: this checks for sensible values in the supplied primary key
+             * position of the data.  The following values are considered empty:
+             *   null, false, true, '', array()
+             */
+            if (array_key_exists($pkIdentity, $data)) {
+                if ($data[$pkIdentity] === null                                        // null
+                    || $data[$pkIdentity] === ''                                       // empty string
+                    || is_bool($data[$pkIdentity])                                     // boolean
+                    || (is_array($data[$pkIdentity]) && empty($data[$pkIdentity]))
+                ) {  // empty array
+                    unset($data[$pkIdentity]);
+                }
             }
-        }
 
-        /**
-         * If this table uses a database sequence object and the data does not
-         * specify a value, then get the next ID from the sequence and add it
-         * to the row.  We assume that only the first column in a compound
-         * primary key takes a value from a sequence.
-         */
-        if (is_string($this->_sequence) && !isset($data[$pkIdentity])) {
-            $data[$pkIdentity] = $this->_db->nextSequenceId($this->_sequence);
+            /**
+             * If this table uses a database sequence object and the data does not
+             * specify a value, then get the next ID from the sequence and add it
+             * to the row.  We assume that only the first column in a compound
+             * primary key takes a value from a sequence.
+             */
+            if (is_string($this->_sequence) && !isset($data[$pkIdentity])) {
+                $data[$pkIdentity] = $this->_db->nextSequenceId($this->_sequence);
+            }
         }
 
         /**
@@ -549,23 +553,27 @@ class Kwf_Db_Table
         $tableSpec = ($this->_schema ? $this->_schema . '.' : '') . $this->_name;
         $this->_db->insert($tableSpec, $data);
 
-        /**
-         * Fetch the most recent ID generated by an auto-increment
-         * or IDENTITY column, unless the user has specified a value,
-         * overriding the auto-increment mechanism.
-         */
-        if ($this->_sequence === true && !isset($data[$pkIdentity])) {
-            $data[$pkIdentity] = $this->_db->lastInsertId();
-        }
+        if (! $this->_db instanceof H3S_Db_Adapter_Pdo_Mssql) { // H3S: No good for MSSQL
+            /**
+             * Fetch the most recent ID generated by an auto-increment
+             * or IDENTITY column, unless the user has specified a value,
+             * overriding the auto-increment mechanism.
+             */
+            if ($this->_sequence === true && !isset($data[$pkIdentity])) {
+                $data[$pkIdentity] = $this->_db->lastInsertId();
+            }
 
-        /**
-         * Return the primary key value if the PK is a single column,
-         * else return an associative array of the PK column/value pairs.
-         */
-        $pkData = array_intersect_key($data, array_flip($primary));
-        if (count($primary) == 1) {
-            reset($pkData);
-            return current($pkData);
+            /**
+             * Return the primary key value if the PK is a single column,
+             * else return an associative array of the PK column/value pairs.
+             */
+            $pkData = array_intersect_key($data, array_flip($primary));
+            if (count($primary) == 1) {
+                reset($pkData);
+                return current($pkData);
+            }
+        } else {
+            $pkData = $this->_db->lastInsertId();
         }
 
         return $pkData;

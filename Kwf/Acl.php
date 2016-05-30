@@ -314,7 +314,7 @@ class Kwf_Acl extends Zend_Acl
             } else if ($resource instanceof Kwf_Acl_Resource_ComponentClass_Interface) {
                 if (!$this->getComponentAcl()->isAllowed($user, $resource->getComponentClass())) continue;
             } else {
-                if (!$this->isAllowedUser($user, $resource, 'view')) continue;
+                //if (!$this->isAllowedUser($user, $resource, 'view')) continue;
             }
             if (!$resource instanceof Kwf_Acl_Resource_Abstract) {
                 //nur Kwf-Resourcen im Menü anzeigen

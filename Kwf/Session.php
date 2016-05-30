@@ -5,7 +5,7 @@ class Kwf_Session extends Zend_Session
     {
         //code added here won't be called by Kwf_Session_Namespace -> afterStart
         parent::start($options);
-        self::afterStart();
+        //self::afterStart();
     }
 
     public static function afterStart()
@@ -19,7 +19,7 @@ class Kwf_Session extends Zend_Session
 
             //sessions timeout after 15-20 minutes of inactivity
             //this is in addition to gc_maxlifetime (which isn't reliable enough)
-            $sessionTimeout = 20*60;
+            $sessionTimeout = 8*60*60;
             if (!isset($_SESSION['kwfTimeout'])) {
                 $_SESSION['kwfTimeout'] = time() + $sessionTimeout;
             } else if ($_SESSION['kwfTimeout'] - time() < 0) {

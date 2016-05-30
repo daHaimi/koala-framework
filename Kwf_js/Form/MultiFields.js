@@ -3,6 +3,7 @@ Kwf.Form.MultiFields = Ext2.extend(Ext2.Panel, {
     position: true,
     allowAdd: true,
     allowDelete: true,
+    readableName: 'Element',
     initComponent : function() {
         Kwf.Form.MultiFields.superclass.initComponent.call(this);
 
@@ -31,6 +32,7 @@ Kwf.Form.MultiFields = Ext2.extend(Ext2.Panel, {
 
     // private
     onRender : function(ct, position){
+        this.updateButtonsState();
         Kwf.Form.MultiFields.superclass.onRender.call(this, ct, position);
 
         if (!this.maxEntries || !this.minEntries || this.maxEntries != this.minEntries) {
@@ -182,6 +184,10 @@ Kwf.Form.MultiFields = Ext2.extend(Ext2.Panel, {
                     }
                     item.setTitle(title);
                 }
+                // H3S: Lfdnr field
+                if (this.readableName == 'Reparatur' && item.name == 'Lfdnr') {
+                    item.setValue(i + 1);
+                }
             }, this);
         }
     }
@@ -191,11 +197,14 @@ Ext2.reg('multifields', Kwf.Form.MultiFields);
 Kwf.Form.MultiFieldsDeleteButton = Ext2.extend(Ext2.BoxComponent,  {
     // private
     onRender : function(ct, position){
+        var p = this.multiFieldsPanel;
+        var text = p.readableName + ' ' + trlKwf('entfernen');
         this.el = ct.createChild({
             tag: 'a',
-            html: '<img src="/assets/silkicons/delete.png" />',
+            html: text +' <img src="/assets/silkicons/delete.png" />',
             href: '#',
-            style: 'float: right; position: relative; z-index: 10; left: -20px; top: 1px;'
+            class: 'h3s-mufi-button h3s-mufi-del-button',
+            title: text
         }, position);
         this.el.on('click', function(e) {
             e.stopEvent();
@@ -280,11 +289,14 @@ Kwf.Form.MultiFieldsDownButton = Ext2.extend(Ext2.BoxComponent,  {
 Kwf.Form.MultiFieldsAddButton = Ext2.extend(Ext2.BoxComponent,  {
     // private
     onRender : function(ct, position){
+        var p = this.multiFieldsPanel;
+        var text = p.readableName + ' ' + trlKwf('hinzufügen');
         this.el = ct.createChild({
             tag: 'a',
-            html: '<img src="/assets/silkicons/add.png" />',
+            html: text + ' <img src="/assets/silkicons/add.png" />',
             href: '#',
-            style: 'float: right; position: relative; z-index: 10; left: -20px; top: 1px;'
+            class: 'h3s-mufi-button h3s-mufi-add-button',
+            title: text
         }, position);
         this.el.on('click', function(e) {
             e.stopEvent();
@@ -321,7 +333,7 @@ Kwf.Form.MultiFieldsHidden = Ext2.extend(Ext2.form.Hidden, {
     },
     setValue : function(value) {
         var gp = this.multiFieldsPanel;
-        if (!value instanceof Array) throw new 'ohje, value ist kein array - wos mochma do?';
+        if (!value instanceof Array) throw 'ohje, value ist kein array - wos mochma do?';
         this._initFields(value.length);
         for (var i = 0; i < gp.groups.length; i++) {
             if (value[i]) {

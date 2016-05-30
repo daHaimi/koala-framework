@@ -75,7 +75,7 @@ class Kwf_Grid_Column implements Kwf_Collection_Item_Interface
         foreach ($ret as $k=>$i) {
             if (is_object($i)) {
                 unset($ret[$k]);
-                if ($i instanceof Kwf_Asset) {
+                if ($i instanceof Kwf_Asset || $i instanceof Zend_Json_Expr) {
                     $ret[$k] = $i->__toString();
                 } else {
                     $ret[$k] = $i->getMetaData($model);

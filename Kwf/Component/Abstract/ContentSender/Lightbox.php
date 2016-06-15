@@ -34,7 +34,7 @@ class Kwf_Component_Abstract_ContentSender_Lightbox extends Kwf_Component_Abstra
         }
 
         if (!$parent) {
-            $parent = Kwf_Component_Data_Root::getInstance()->getChildPage(array('home' => true), array());
+            $parent = $this->_data->getSubroot()->getChildPage(array('home' => true), array());
         }
 
         //TODO: the proper solution would be to restructure List_Switch so that the page is our parent
@@ -109,13 +109,13 @@ class Kwf_Component_Abstract_ContentSender_Lightbox extends Kwf_Component_Abstra
                 "                       <div class=\"kwfLightboxContent\">\n".
                 "                           $lightboxContent\n".
                 "                       </div>\n".
+                "                       <a class=\"closeButton\" href=\"$parent->url\"><span class=\"innerCloseButton\">". $this->_data->trlKwf('Close') ."</span></a>\n".
                 "                   </div>\n".
                 "               </div>\n".
                 "            </div>\n".
                 "        </div>\n".
                 "        <div class=\"kwfLightboxMask kwfLightboxMaskOpen\"></div>\n".
                 "    </div>\n".
-                "    <a class=\"closeButton\" href=\"$parent->url\"></a>\n".
                 "</div>\n";
             return preg_replace('#(<body[^>]*>)#', "\\1\n".$lightboxContent, $parentContent);
         } else {

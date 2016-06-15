@@ -11,6 +11,7 @@ class Kwf_Model_Db extends Kwf_Model_Abstract
     protected $_tableName;
     private $_columns;
     protected $_primaryKey;
+    private $_columnTypes = array();
 
     protected $_supportedImportExportFormats = array(self::FORMAT_SQL, self::FORMAT_CSV, self::FORMAT_ARRAY);
 
@@ -57,12 +58,16 @@ class Kwf_Model_Db extends Kwf_Model_Abstract
 
     public function getColumnType($col)
     {
+        if (isset($this->_columnTypes[$col])) {
+            return $this->_columnTypes[$col];
+        }
         $info = $this->getTable()->info();
         if (isset($info['metadata'][$col])) {
             $type = $this->_getTypeFromDbType($info['metadata'][$col]['DATA_TYPE']);
             if ($col == 'pos' && $type == self::TYPE_BOOLEAN) {
                 throw new Kwf_Exception('Column "pos" must not be of type TINYINT in table "' . $this->getTable()->getTableName() . '"');
             }
+            $this->_columnTypes[$col] = $type;
             return $type;
         }
         return parent::getColumnType($col);
@@ -608,7 +613,10 @@ class Kwf_Model_Db extends Kwf_Model_Abstract
             ";
         } else if ($expr instanceof Kwf_Model_Select_Expr_GroupConcat) {
             $field = $this->_formatField($expr->getField(), $dbSelect, $tableNameAlias);
-            return "GROUP_CONCAT($field SEPARATOR ".$this->getAdapter()->quote($expr->getSeparator()).")";
+            $orderField = $expr->getOrderField();
+            $orderFieldValue = $orderField ? $this->_formatField($orderField['field'], $dbSelect, $tableNameAlias) : null;
+            $orderBy = $orderField ? 'ORDER BY '.$orderFieldValue.' '.$orderField['direction'] : '';
+            return "GROUP_CONCAT($field $orderBy SEPARATOR ".$this->getAdapter()->quote($expr->getSeparator()).")";
         } else if ($expr instanceof Kwf_Model_Select_Expr_Child) {
             $d = $depOf->getDependentModelWithDependentOf($expr->getChild());
             $depM = $d['model'];
@@ -718,6 +726,7 @@ class Kwf_Model_Db extends Kwf_Model_Abstract
             $col2 = $dbRefM->_formatField($dbRefM->getPrimaryKey(), $dbSelect, $refTableNameAlias);
 
             $refSelect->where("$col2=$col1");
+            $refSelect->ignoreDeleted(true);
             $refDbSelect = $dbRefM->createDbSelect($refSelect, $refTableNameAlias);
             $f = $expr->getField();
             if (is_string($f)) {
@@ -931,7 +940,7 @@ class Kwf_Model_Db extends Kwf_Model_Abstract
                 if ($o['field'] instanceof Zend_Db_Expr) {
                     $dbSelect->order($o['field']);
                 } else if ($o['field'] instanceof Kwf_Model_Select_Expr_Interface) {
-                    $dbSelect->order($this->_createDbSelectExpression($o['field'], $dbSelect).' '.$o['direction']);
+                    $dbSelect->order(new Zend_Db_Expr($this->_createDbSelectExpression($o['field'], $dbSelect).' '.$o['direction']));
                 } else if ($o['field'] == Kwf_Model_Select::ORDER_RAND) {
                     $dbSelect->order('RAND()');
                 } else {
